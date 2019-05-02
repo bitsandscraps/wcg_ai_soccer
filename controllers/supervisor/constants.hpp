@@ -211,12 +211,13 @@ namespace constants {
   /****************************************************************************
    * ADDITONAL SETTINGS
    ****************************************************************************/
-  constexpr bool DEADLOCK_INIT_RANDOM = false;
+  constexpr bool DEADLOCK_INIT_RANDOM = true;
   constexpr bool BALLOUT_CHECK = false;
   constexpr bool PENALTYAREA_CHECK = false;
   constexpr std::array<std::array<bool, NUMBER_OF_ROBOTS>, 2> ACTIVENESS = {{
+    // GK, D2, D1, F2, F1
     { true, true, true, true, true },
-    { true, false, false, false, false },
+    { false, false, true, false, false },
   }};
 
   constexpr std::size_t MSG_MAX_SIZE = 90000; // bytes
