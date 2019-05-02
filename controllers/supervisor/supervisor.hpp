@@ -66,7 +66,12 @@ public:
     return pc_cams_[is_red ? C_CAMA : C_CAMB]->getImage();
   }
 
-  void reset_position(constants::robot_formation red_formation, constants::robot_formation blue_formation)
+  // void reset_position(constants::robot_formation red_formation, constants::robot_formation blue_formation)
+  void reset_position(constants::robot_formation red_formation,
+                      constants::robot_formation blue_formation,
+                      std::array<double, 2>* ball_posture_random,
+                      std::array<std::array<double, 3>, constants::NUMBER_OF_ROBOTS>* red_formation_random,
+                      std::array<std::array<double, 3>, constants::NUMBER_OF_ROBOTS>* blue_formation_random)
   {
     namespace c = constants;
 
@@ -147,19 +152,44 @@ public:
       case c::FORMATION_PENALTYKICK_D:
         reset_ball_node(getFromDef(c::DEF_BALL), -c::BALL_POSTURE[c::BALL_PENALTYKICK][0], 1.5*c::BALL_RADIUS, c::BALL_POSTURE[c::BALL_PENALTYKICK][1]);
         break;
+      case c::FORMATION_RANDOM:
+        reset_ball_node(getFromDef(c::DEF_BALL),
+                        (*ball_posture_random)[0],
+                        1.5 * c::BALL_RADIUS,
+                        (*ball_posture_random)[1]);
+        for(const auto& is_red : {true, false}) {
+          const auto& formation = is_red ? red_formation_random : blue_formation_random;
+          for(std::size_t id = 0; id < c::NUMBER_OF_ROBOTS; ++id) {
+            reset_robot_node(getFromDef(robot_name(is_red, id)),
+                             (*formation)[id][0],
+                             c::ROBOT_HEIGHT[id] / 2,
+                             (*formation)[id][1],
+                             (*formation)[id][2]);
+          }
+        }
+        return;
       default:
         break;
     }
 
     for(const auto& is_red : {true, false}) {
       const auto s = is_red ? 1 : -1;
+      const std::size_t team_id = is_red ? 0 : 1;
       auto formation = is_red ? red_formation : blue_formation;
       for(std::size_t id = 0; id < c::NUMBER_OF_ROBOTS; ++id) {
-        reset_robot_node(getFromDef(robot_name(is_red, id)),
-                   c::ROBOT_FORMATION[formation][id][0] * s,
-                   c::ROBOT_HEIGHT[id] / 2,
-                   c::ROBOT_FORMATION[formation][id][1] * s,
-                   c::ROBOT_FORMATION[formation][id][2] + (is_red ? 0. : c::PI) - c::PI / 2);
+        if (c::ACTIVENESS[team_id][id]) {
+          reset_robot_node(getFromDef(robot_name(is_red, id)),
+                     c::ROBOT_FORMATION[formation][id][0] * s,
+                     c::ROBOT_HEIGHT[id] / 2,
+                     c::ROBOT_FORMATION[formation][id][1] * s,
+                     c::ROBOT_FORMATION[formation][id][2] + (is_red ? 0. : c::PI) - c::PI / 2);
+        } else {
+          reset_robot_node(getFromDef(robot_name(is_red, id)),
+                     c::ROBOT_FOUL_POSTURE[id][0] * s,
+                     c::ROBOT_HEIGHT[id] / 2,
+                     c::ROBOT_FOUL_POSTURE[id][1] * s,
+                     c::ROBOT_FOUL_POSTURE[id][2] + (is_red ? 0. : c::PI) - c::PI / 2);
+        }
       }
     }
   }

@@ -52,6 +52,8 @@ namespace constants {
   constexpr double GOAL_AREA_WIDTH = 1.3;
   constexpr double WALL_THICKNESS = 0.025;
   constexpr double CORNER_LENGTH = 0.1;
+  constexpr double MAX_MIN_POSTURE_DIFF[3] = { FIELD_LENGTH, FIELD_WIDTH, 2 * PI };
+  constexpr double MIN_POSTURE[3] = { -FIELD_LENGTH / 2, -FIELD_WIDTH / 2, 0 };
 
   // Ball Dimension
   constexpr double BALL_RADIUS = 0.04;
@@ -60,6 +62,9 @@ namespace constants {
   // Robot Specifications
   constexpr std::size_t NUMBER_OF_ROBOTS = 5;
   constexpr std::array<double, 5> ROBOT_SIZE = {0.15, 0.15, 0.15, 0.15, 0.15};
+  /****************** NEED TO EDIT IF ROBOT SIZES ARE DIFFERENT!!!!!!!!!! *********************/
+  constexpr double ROBOT_RADIUS = ROBOT_SIZE[0] * std::sqrt(2) / 2.0;
+  /********************************************************************************************/
   constexpr std::array<double, 5> ROBOT_HEIGHT = {0.09, 0.09, 0.09, 0.09, 0.09};
   constexpr std::array<double, 5> AXLE_LENGTH = {0.14, 0.14, 0.14, 0.14, 0.14};
   constexpr std::array<double, 5> ROBOT_BODY_MASS = {2.5, 2.0, 2.0, 1.5, 1.5};
@@ -203,6 +208,17 @@ namespace constants {
   constexpr std::size_t CORNERKICK_TIME_LIMIT_MS = 3 * 1000; // ms
   constexpr std::size_t PENALTYKICK_TIME_LIMIT_MS = 3 * 1000; // ms
 
+  /****************************************************************************
+   * ADDITONAL SETTINGS
+   ****************************************************************************/
+  constexpr bool DEADLOCK_INIT_RANDOM = false;
+  constexpr bool BALLOUT_CHECK = false;
+  constexpr bool PENALTYAREA_CHECK = false;
+  constexpr std::array<std::array<bool, NUMBER_OF_ROBOTS>, 2> ACTIVENESS = {{
+    { true, true, true, true, true },
+    { true, false, false, false, false },
+  }};
+
   constexpr std::size_t MSG_MAX_SIZE = 90000; // bytes
 
   enum reason_code {
@@ -242,6 +258,7 @@ namespace constants {
     FORMATION_CBC_DD = 11,
     FORMATION_PENALTYKICK_A = 12,
     FORMATION_PENALTYKICK_D = 13,
+    FORMATION_RANDOM = 14,
   };
 
   enum ball_posture {

@@ -4,8 +4,8 @@
 # See documentation in $(WEBOTS_HOME_PATH)/resources/Makefile.include
 
 # Should be CXXFLAGS, but webots uses CFLAGS for both of C and C++
-CFLAGS = -Wall -Wextra -std=c++14 -pedantic -O2 -pthread
-LFLAGS = -pthread
+CFLAGS = -Wall -Wextra -std=c++14 -pedantic
+LFLAGS = -pthread -no-pie
 
 CFLAGS += -I ../../extlibs/bonefish/include \
 	-I ../../extlibs/msgpack-c/include \
