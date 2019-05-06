@@ -1017,13 +1017,23 @@ void set_init_posture(std::array<double, 2>* ball_posture,
   }
 }
 
-void game::run_game()
+void reset_to_random_posture()
 {
   std::array<double, 2> ball_posture;
   std::array<std::array<std::array<double, 3>, constants::NUMBER_OF_ROBOTS>, 2> robot_postures;
+  set_init_posture(&ball_posture, &robot_postures);
+  reset(c::FORMATION_RANDOM,
+        c::FORMATION_RANDOM,
+        &ball_posture,
+        &robot_postures[0],
+        &robot_postures[1]);
+}
+
+void game::run_game()
+{
   time_ms_ = 0;
   score_ = {0, 0};
-  half_passed_ = false;
+  half_passed_ = !c::HALFTIME_CHANGE_SIDES;
 
   activeness_ = c::ACTIVENESS;
   /*
@@ -1045,14 +1055,9 @@ void game::run_game()
 
   // reset and wait 1s for stabilizing
   pause();
-  if (c::DEADLOCK_INIT_RANDOM) {
+  if (c::INITIALIZE_RANDOM) {
     game_state_ = c::STATE_DEFAULT;
-    set_init_posture(&ball_posture, &robot_postures);
-    reset(c::FORMATION_RANDOM,
-          c::FORMATION_RANDOM,
-          &ball_posture,
-          &robot_postures[0],
-          &robot_postures[1]);
+    reset_to_random_posture();
   } else {
     // game starts with a kickoff by T_RED
     ball_ownership_ = T_RED;
@@ -1185,7 +1190,7 @@ void game::run_game()
             stop_robots();
             step(c::WAIT_GOAL_MS);
 
-            if (c::DEADLOCK_INIT_RANDOM) {
+            if (c::DEADLOCK_RESET_RANDOM) {
               game_state_ = c::STATE_DEFAULT;
               set_init_posture(&ball_posture, &robot_postures);
               reset(c::FORMATION_RANDOM,
@@ -1213,97 +1218,101 @@ void game::run_game()
             reset_reason = (ball_x > 0) ? c::SCORE_RED_TEAM : c::SCORE_BLUE_TEAM;
         }
         // ball sent out of the field - proceed to corner kick or goal kick
-        else if(c::BALLOUT_CHECK && !ball_in_field()){
+        else if(!ball_in_field()){
           pause();
           stop_robots();
           step(c::WAIT_STABLE_MS);
 
-          // determine the ownership based on who touched the ball last
-          int touch_count[2] = {0, 0};
-          for(const auto& team : {T_RED, T_BLUE}) {
-            for(std::size_t id = 0; id < c::NUMBER_OF_ROBOTS; id++) {
-              if(recent_touch_[team][id])
-                touch_count[team] += 1;
-            }
-          }
-
-          // if recent_touch_ was red team dominant, blue team gets the ball
-          if(touch_count[T_RED] > touch_count[T_BLUE])
-            ball_ownership_ = T_BLUE;
-          // the other way around
-          else if(touch_count[T_BLUE] > touch_count[T_RED])
-            ball_ownership_ = T_RED;
-          // otherwise, the attacking team gets an advantage
-          else
-            ball_ownership_ = (ball_x < 0) ? T_BLUE : T_RED;
-
-          // happened on the left side
-          if(ball_x < 0) {
-            // if the red gets the ball, proceed to goalkick
-            if(ball_ownership_ == T_RED) {
-              game_state_ = c::STATE_GOALKICK;
-              goalkick_time_ = time_ms_;
-
-              reset(c::FORMATION_GOALKICK_A, c::FORMATION_GOALKICK_D);
-
-              lock_all_robots();
-              unlock_robot(ball_ownership_, 0);
-
-              reset_reason = c::GOALKICK;
-            }
-            // otherwise, proceed to corner kick
-            else {
-              game_state_ = c::STATE_CORNERKICK;
-              cornerkick_time_ = time_ms_;
-
-              if(ball_y > 0) {
-                // upper left corner
-                reset(c::FORMATION_CAD_AD, c::FORMATION_CAD_AA);
+          if (c::BALLOUT_RESET_RANDOM) {
+            // determine the ownership based on who touched the ball last
+            int touch_count[2] = {0, 0};
+            for(const auto& team : {T_RED, T_BLUE}) {
+              for(std::size_t id = 0; id < c::NUMBER_OF_ROBOTS; id++) {
+                if(recent_touch_[team][id])
+                  touch_count[team] += 1;
               }
+            }
+
+            // if recent_touch_ was red team dominant, blue team gets the ball
+            if(touch_count[T_RED] > touch_count[T_BLUE])
+              ball_ownership_ = T_BLUE;
+            // the other way around
+            else if(touch_count[T_BLUE] > touch_count[T_RED])
+              ball_ownership_ = T_RED;
+            // otherwise, the attacking team gets an advantage
+            else
+              ball_ownership_ = (ball_x < 0) ? T_BLUE : T_RED;
+
+            // happened on the left side
+            if(ball_x < 0) {
+              // if the red gets the ball, proceed to goalkick
+              if(ball_ownership_ == T_RED) {
+                game_state_ = c::STATE_GOALKICK;
+                goalkick_time_ = time_ms_;
+
+                reset(c::FORMATION_GOALKICK_A, c::FORMATION_GOALKICK_D);
+
+                lock_all_robots();
+                unlock_robot(ball_ownership_, 0);
+
+                reset_reason = c::GOALKICK;
+              }
+              // otherwise, proceed to corner kick
               else {
-                // lower left corner
-                reset(c::FORMATION_CBC_AD, c::FORMATION_CBC_AA);
+                game_state_ = c::STATE_CORNERKICK;
+                cornerkick_time_ = time_ms_;
+
+                if(ball_y > 0) {
+                  // upper left corner
+                  reset(c::FORMATION_CAD_AD, c::FORMATION_CAD_AA);
+                }
+                else {
+                  // lower left corner
+                  reset(c::FORMATION_CBC_AD, c::FORMATION_CBC_AA);
+                }
+
+                lock_all_robots();
+                unlock_robot(ball_ownership_, 4);
+
+                reset_reason = c::CORNERKICK;
               }
-
-              lock_all_robots();
-              unlock_robot(ball_ownership_, 4);
-
-              reset_reason = c::CORNERKICK;
             }
-          }
-          // cornerkick happened on the right side
-          else {
-            // if the blue gets the ball, proceed to goalkick
-            if(ball_ownership_ == T_BLUE) {
-              game_state_ = c::STATE_GOALKICK;
-              goalkick_time_ = time_ms_;
-
-              reset(c::FORMATION_GOALKICK_D, c::FORMATION_GOALKICK_A);
-
-              lock_all_robots();
-              unlock_robot(ball_ownership_, 0);
-
-              reset_reason = c::GOALKICK;
-            }
-            // otherwise, proceed to corenerkick
+            // cornerkick happened on the right side
             else {
-              game_state_ = c::STATE_CORNERKICK;
-              cornerkick_time_ = time_ms_;
+              // if the blue gets the ball, proceed to goalkick
+              if(ball_ownership_ == T_BLUE) {
+                game_state_ = c::STATE_GOALKICK;
+                goalkick_time_ = time_ms_;
 
-              if(ball_y > 0) {
-                // upper right corner
-                reset(c::FORMATION_CBC_AA, c::FORMATION_CBC_AD);
+                reset(c::FORMATION_GOALKICK_D, c::FORMATION_GOALKICK_A);
+
+                lock_all_robots();
+                unlock_robot(ball_ownership_, 0);
+
+                reset_reason = c::GOALKICK;
               }
+              // otherwise, proceed to corenerkick
               else {
-                // lower right corner
-                reset(c::FORMATION_CAD_AA, c::FORMATION_CAD_AD);
+                game_state_ = c::STATE_CORNERKICK;
+                cornerkick_time_ = time_ms_;
+
+                if(ball_y > 0) {
+                  // upper right corner
+                  reset(c::FORMATION_CBC_AA, c::FORMATION_CBC_AD);
+                }
+                else {
+                  // lower right corner
+                  reset(c::FORMATION_CAD_AA, c::FORMATION_CAD_AD);
+                }
+
+                lock_all_robots();
+                unlock_robot(ball_ownership_, 4);
+
+                reset_reason = c::CORNERKICK;
               }
-
-              lock_all_robots();
-              unlock_robot(ball_ownership_, 4);
-
-              reset_reason = c::CORNERKICK;
             }
+          } else {
+            reset_to_random_posture();
           }
 
           step(c::WAIT_STABLE_MS);
@@ -1408,7 +1417,7 @@ void game::run_game()
           const auto ball_y = std::get<1>(sv_.get_ball_position());
           bool general_reset = true;
 
-          if (!c::DEADLOCK_INIT_RANDOM) {
+          if (!c::DEADLOCK_RESET_RANDOM) {
             // if the deadlock happened in special region
             if (std::abs(ball_x) > c::FIELD_LENGTH / 2 - c::PENALTY_AREA_DEPTH) {
               general_reset = false;
@@ -1538,13 +1547,8 @@ void game::run_game()
             stop_robots();
             step(c::WAIT_STABLE_MS);
 
-            if (c::DEADLOCK_INIT_RANDOM) {
-              set_init_posture(&ball_posture, &robot_postures);
-              reset(c::FORMATION_RANDOM,
-                    c::FORMATION_RANDOM,
-                    &ball_posture,
-                    &robot_postures[0],
-                    &robot_postures[1]);
+            if (c::DEADLOCK_RESET_RANDOM) {
+              reset_to_random_posture();
             } else {
               // determine where to relocate and relocate the ball
               if (ball_x < 0) { // Team Red's region

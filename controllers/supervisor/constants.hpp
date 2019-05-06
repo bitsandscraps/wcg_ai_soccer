@@ -200,7 +200,7 @@ namespace constants {
   constexpr std::size_t DEADLOCK_SENTOUT_NUMBER = 2; // number of robots sent out when a deadlock happens
   constexpr std::size_t SENTOUT_DURATION_MS = 5 * 1000; // ms
   constexpr std::size_t FALL_TIME_MS = 3 * 1000; // ms
-  constexpr std::size_t DEADLOCK_DURATION_MS  = 4 * 1000; // ms
+  constexpr std::size_t DEADLOCK_DURATION_MS  = 20 * 1000; // ms
   constexpr double      DEADLOCK_THRESHOLD = 0.4; // m/s
   constexpr std::size_t KICKOFF_TIME_LIMIT_MS = 3 * 1000; // ms
   constexpr double      KICKOFF_BORDER = 0.5; // m
@@ -211,14 +211,17 @@ namespace constants {
   /****************************************************************************
    * ADDITONAL SETTINGS
    ****************************************************************************/
-  constexpr bool DEADLOCK_INIT_RANDOM = true;
-  constexpr bool BALLOUT_CHECK = false;
+  constexpr bool HALFTIME_CHANGE_SIDES = false;
+  constexpr bool INITIALIZE_RANDOM = true;
+  constexpr bool DEADLOCK_RESET_RANDOM = true;
+  constexpr bool BALLOUT_RESET_RANDOM = true;
   constexpr bool PENALTYAREA_CHECK = false;
   constexpr std::array<std::array<bool, NUMBER_OF_ROBOTS>, 2> ACTIVENESS = {{
     // GK, D2, D1, F2, F1
     { true, true, true, true, true },
-    { false, false, true, false, false },
+    { false, false, false, false, false },
   }};
+  /****************************************************************************/
 
   constexpr std::size_t MSG_MAX_SIZE = 90000; // bytes
 

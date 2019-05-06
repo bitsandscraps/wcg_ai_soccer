@@ -1,11 +1,11 @@
 {
   "rule": {
-    "game_time": 300,
+    "game_time": 300000000,
     "deadlock": true
   },
   "team_a": {
     "name": "teamA",
-    "executable": "examples/player_rulebased-A_py/player_rulebased-A.py",
+    "executable": "examples/ppo2/player_ER_share_discrete_wcg_v2_2policy.py",
     "datapath": "examples/team_a_data"
   },
   "team_b": {
