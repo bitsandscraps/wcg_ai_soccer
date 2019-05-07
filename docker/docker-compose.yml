@@ -1,0 +1,48 @@
+version: "3.7"
+services:
+    base:
+        build:
+            context: /mnt/wisrl/Documents/wcg/wcg_ai_soccer/docker
+            dockerfile: /mnt/wisrl/Documents/wcg/wcg_ai_soccer/docker/base.Dockerfile
+            args:
+                - CUDA=10.0
+                - UBUNTU_MAJOR=18
+                - UBUNTU_MINOR=04
+                - WEBOTS=webots_2019a-rev1_amd64.deb
+                - TF=tensorflow-1.13.1-cp36-cp36m-linux_x86_64.whl
+        image: bitsandscraps/aiwc:base-python3-cuda-10.0-ubuntu-18.04
+    run:
+        build:
+            context: /mnt/wisrl/Documents/wcg/wcg_ai_soccer
+            dockerfile: /mnt/wisrl/Documents/wcg/wcg_ai_soccer/docker/Dockerfile
+            args:
+                - UBUNTU_VERSION=18.04
+        image: bitsandscraps/aiwc:run-python3-cuda-10.0-ubuntu-18.04
+        environment:
+            - DISPLAY=unix$DISPLAY
+            - PULSE_SERVER=unix:${XDG_RUNTIME_DIR}/pulse/native
+        volumes:
+            - /mnt/wisrl/Documents/wcg/wcg_ai_soccer/examples:/root/examples
+            - /tmp/.X11-unix:/tmp.X11-unix:rw
+            - ${XDG_RUNTIME_DIR}/pulse/native:${XDG_RUNTIME_DIR}/pulse/native
+            - ~/.config/pulse/cookie:/root/.config/pulse/cookie
+        devices:
+            - /dev/snd
+    devel:
+        build:
+            context: /mnt/wisrl/Documents/wcg/wcg_ai_soccer/docker
+            dockerfile: /mnt/wisrl/Documents/wcg/wcg_ai_soccer/docker/devel.Dockerfile
+        command: bash /root/make.sh
+        image: wcg-devel
+        environment:
+            - HOST_PERMS=1000:1000
+        volumes:
+            - /mnt/wisrl/Documents/wcg/wcg_ai_soccer/controllers:/root/controllers
+            - /mnt/wisrl/Documents/wcg/wcg_ai_soccer/extlibs:/root/extlibs
+    plugins:
+        image: wcg-devel
+        command: bash /root/make-plugins.sh
+        environment:
+            - HOST_PERMS=1000:1000
+        volumes:
+            - /mnt/wisrl/Documents/wcg/wcg_ai_soccer/plugins:/root/plugins

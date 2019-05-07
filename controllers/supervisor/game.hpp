@@ -67,6 +67,8 @@ private:
   // game state control functions
   void step(std::size_t ms); // throw webots_revert_exception when webots reverts
   void pause();
+  void set_force(std::array<double, 2>* ball_posture);
+  void reset_to_random_posture();
   void reset(constants::robot_formation red_formation,
              constants::robot_formation blue_formation,
              std::array<double, 2>* ball_posture_random = nullptr,

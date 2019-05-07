@@ -1,7 +1,7 @@
 #VRML_SIM R2019a utf8
 WorldInfo {
   ERP 0.15
-  physics "collision_detector"
+  physics "collision_detector_ball_shooter"
   basicTimeStep 10
   FPS 20
   defaultDamping Damping {
@@ -281,6 +281,9 @@ DirectionalLight {
 Referee {
   translation 0 25.6 0
   children [
+    DEF DEF_EMIT Emitter {
+      name "emit"
+    }
     DEF DEF_RECV Receiver {
       name "recv"
     }

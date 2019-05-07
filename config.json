@@ -5,7 +5,8 @@
   },
   "team_a": {
     "name": "teamA",
-    "executable": "examples/ppo2/player_ER_share_discrete_wcg_v2_2policy.py",
+    "executable": "examples/player_rulebased-A_py/player_rulebased-A.py",
+    "executable1": "examples/disc/player_DISC.py",
     "datapath": "examples/team_a_data"
   },
   "team_b": {

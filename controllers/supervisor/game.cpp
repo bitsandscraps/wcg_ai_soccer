@@ -438,19 +438,28 @@ void game::terminate_participant()
 
 void game::update_label()
 {
-  if(half_passed_ == false) {
-    sv_.setLabel(1, "1st Half", 0.45, 0, 0.10, 0x00000000, 0, "Arial");
+  if (c::PROCEED_TO_SECOND_HALF) {
+    if(half_passed_ == false) {
+      sv_.setLabel(1, "1st Half", 0.45, 0, 0.10, 0x00000000, 0, "Arial");
+      sv_.setLabel(0,
+                   (boost::format("score %d:%d, time %.2f") % score_[0] % score_[1] % (time_ms_ / 1000.)).str(),
+                   0.4, 0.95, // x, y
+                   0.10, 0x00000000, // size, color
+                   0, "Arial" // transparency, font
+                   );
+    }
+    else {
+      sv_.setLabel(1, "2nd Half", 0.45, 0, 0.10, 0x00000000, 0, "Arial");
+      sv_.setLabel(0,
+                   (boost::format("score %d:%d, time %.2f") % score_[1] % score_[0] % (time_ms_ / 1000.)).str(),
+                   0.4, 0.95, // x, y
+                   0.10, 0x00000000, // size, color
+                   0, "Arial" // transparency, font
+                   );
+    }
+  } else {
     sv_.setLabel(0,
                  (boost::format("score %d:%d, time %.2f") % score_[0] % score_[1] % (time_ms_ / 1000.)).str(),
-                 0.4, 0.95, // x, y
-                 0.10, 0x00000000, // size, color
-                 0, "Arial" // transparency, font
-                 );
-  }
-  else {
-    sv_.setLabel(1, "2nd Half", 0.45, 0, 0.10, 0x00000000, 0, "Arial");
-    sv_.setLabel(0,
-                 (boost::format("score %d:%d, time %.2f") % score_[1] % score_[0] % (time_ms_ / 1000.)).str(),
                  0.4, 0.95, // x, y
                  0.10, 0x00000000, // size, color
                  0, "Arial" // transparency, font
@@ -502,7 +511,7 @@ void game::reset(c::robot_formation red_formation,
                      blue_formation_random);
 
   // reset activeness
-  activeness_ = constants::ACTIVENESS;
+  activeness_ = c::ACTIVENESS;
   /*
   for(auto& team_activeness : activeness_) {
     for(auto& robot_activeness : team_activeness) {
@@ -544,6 +553,9 @@ void game::reset(c::robot_formation red_formation,
 void game::resume()
 {
   paused_.store(false);
+  if (c::GK_PRACTICE) {
+    sv_.send_force_to_shooter();
+  }
 }
 
 void game::stop_robots()
@@ -898,7 +910,9 @@ void game::publish_current_frame(std::size_t reset_reason)
         msg.emplace_back("ball_ownership", msgpack::object(ti.is_red ? ball_ownership_ == T_RED : ball_ownership_ == T_BLUE, z));
       else
         msg.emplace_back("ball_ownership", msgpack::object(false, z));
-      msg.emplace_back("half_passed", msgpack::object(half_passed_, z));
+      if (c::PROCEED_TO_SECOND_HALF) {
+        msg.emplace_back("half_passed", msgpack::object(half_passed_, z));
+      }
 
 
       auto subimages = ti.imbuf.update_image(sv_.get_image(ti.is_red));
@@ -955,7 +969,7 @@ void game::publish_current_frame(std::size_t reset_reason)
 bool check_distance(const std::array<double, 2>* a, const std::array<double, 2>* b) 
 {
   // 5 for safety margin
-  constexpr double min_distance_squared = 5 * constants::ROBOT_RADIUS * constants::ROBOT_RADIUS;
+  constexpr double min_distance_squared = 5 * c::ROBOT_RADIUS * c::ROBOT_RADIUS;
   double xdistance = (*a)[0] - (*b)[0];
   double ydistance = (*a)[1] - (*b)[1];
   return (xdistance * xdistance + ydistance * ydistance) > min_distance_squared;
@@ -970,10 +984,12 @@ bool check_distances(const std::array<double, 2>* a,
   return true;
 }
 
-double random_posture(std::size_t i)
+double random_posture(std::size_t i, bool normal = false)
 {
-  double posture = constants::MAX_MIN_POSTURE_DIFF[i] * std::rand() / RAND_MAX;
-  posture += constants::MIN_POSTURE[i];
+  const auto& max_min_posture_diff = normal ? c::NORMAL_MAX_MIN_POSTURE_DIFF : c::MAX_MIN_POSTURE_DIFF;
+  const auto& min_posture = normal ? c::NORMAL_MIN_POSTURE : c::MIN_POSTURE;
+  double posture = max_min_posture_diff[i] * std::rand() / RAND_MAX;
+  posture += min_posture[i];
   return posture * 0.9; // some safety margin
 }
 
@@ -985,16 +1001,16 @@ void initialize_from_constants(const double* from, std::array<double, 3>* to, bo
 }
 
 void set_init_posture(std::array<double, 2>* ball_posture,
-                      std::array<std::array<std::array<double, 3>, constants::NUMBER_OF_ROBOTS>, 2>* robot_postures)
+                      std::array<std::array<std::array<double, 3>, c::NUMBER_OF_ROBOTS>, 2>* robot_postures)
 {
   std::vector<std::array<double, 2>> preallocated_positions;
   for (std::size_t i = 0; i < 2; ++i) {
-    (*ball_posture)[i] = random_posture(i);
+    (*ball_posture)[i] = random_posture(i, true);
   }
   preallocated_positions.push_back(*ball_posture);
   for (std::size_t team_id : {0, 1}) {
-    for (std::size_t id = 0; id < constants::NUMBER_OF_ROBOTS; ++id) {
-      if (constants::ACTIVENESS[team_id][id]) {
+    for (std::size_t id = 0; id < c::NUMBER_OF_ROBOTS; ++id) {
+      if (c::ACTIVENESS[team_id][id]) {
         // random init + active player
         std::array<double, 2> posture;
         // pick a random posture.
@@ -1009,7 +1025,7 @@ void set_init_posture(std::array<double, 2>* ball_posture,
         // theta has nothing to do with overlapping
         (*robot_postures)[team_id][id][2] = random_posture(2);
       } else {
-        initialize_from_constants(constants::ROBOT_FOUL_POSTURE[id],
+        initialize_from_constants(c::ROBOT_FOUL_POSTURE[id],
                                   &(*robot_postures)[team_id][id],
                                   team_id == 0);
       }
@@ -1017,23 +1033,33 @@ void set_init_posture(std::array<double, 2>* ball_posture,
   }
 }
 
-void reset_to_random_posture()
+void game::set_force(std::array<double, 2>* ball_posture) {
+  double target = c::TARGET_MAX_MIN_Y_DIFF * std::rand() / RAND_MAX;
+  target += c::TARGET_MIN_Y;
+  double fx = c::FORCE_X_MAX_MIN_DIFF * std::rand() / RAND_MAX;
+  fx += c::FORCE_X_MIN;
+  double fy = fx * ((*ball_posture)[1] - target) / ((*ball_posture)[0] + 0.5 * c::FIELD_LENGTH);
+  sv_.set_force(fx * -1, fy);
+}
+
+void game::reset_to_random_posture()
 {
   std::array<double, 2> ball_posture;
-  std::array<std::array<std::array<double, 3>, constants::NUMBER_OF_ROBOTS>, 2> robot_postures;
+  std::array<std::array<std::array<double, 3>, c::NUMBER_OF_ROBOTS>, 2> robot_postures;
   set_init_posture(&ball_posture, &robot_postures);
   reset(c::FORMATION_RANDOM,
         c::FORMATION_RANDOM,
         &ball_posture,
         &robot_postures[0],
         &robot_postures[1]);
+  set_force(&ball_posture);
 }
 
 void game::run_game()
 {
   time_ms_ = 0;
   score_ = {0, 0};
-  half_passed_ = !c::HALFTIME_CHANGE_SIDES;
+  half_passed_ = false;
 
   activeness_ = c::ACTIVENESS;
   /*
@@ -1084,7 +1110,7 @@ void game::run_game()
 
     // special case: game ended. finish the game without checking game rules.
     if(time_ms_ >= game_time_ms_) {
-      if(half_passed_) {
+      if(!c::PROCEED_TO_SECOND_HALF || half_passed_) {
         if(repeat)
           publish_current_frame(c::EPISODE_END);
         else
@@ -1192,12 +1218,7 @@ void game::run_game()
 
             if (c::DEADLOCK_RESET_RANDOM) {
               game_state_ = c::STATE_DEFAULT;
-              set_init_posture(&ball_posture, &robot_postures);
-              reset(c::FORMATION_RANDOM,
-                    c::FORMATION_RANDOM,
-                    &ball_posture,
-                    &robot_postures[0],
-                    &robot_postures[1]);
+              reset_to_random_posture();
             } else {
               game_state_ = c::STATE_KICKOFF;
               // kickoff_foul_flag_ = false;
@@ -1223,7 +1244,7 @@ void game::run_game()
           stop_robots();
           step(c::WAIT_STABLE_MS);
 
-          if (c::BALLOUT_RESET_RANDOM) {
+          if (!c::BALLOUT_RESET_RANDOM) {
             // determine the ownership based on who touched the ball last
             int touch_count[2] = {0, 0};
             for(const auto& team : {T_RED, T_BLUE}) {

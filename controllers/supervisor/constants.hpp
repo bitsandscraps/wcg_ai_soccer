@@ -25,6 +25,7 @@ namespace constants {
   const std::string NAME_CAMA   = "cam_a";
   const std::string NAME_CAMB   = "cam_b";
   const std::string NAME_RECV   = "recv";
+  const std::string NAME_EMIT   = "emit";
 
   // these DEF names are for dynamically created node such as ball and robots
   const std::string DEF_BALL         = "DEF_BALL";
@@ -52,8 +53,6 @@ namespace constants {
   constexpr double GOAL_AREA_WIDTH = 1.3;
   constexpr double WALL_THICKNESS = 0.025;
   constexpr double CORNER_LENGTH = 0.1;
-  constexpr double MAX_MIN_POSTURE_DIFF[3] = { FIELD_LENGTH, FIELD_WIDTH, 2 * PI };
-  constexpr double MIN_POSTURE[3] = { -FIELD_LENGTH / 2, -FIELD_WIDTH / 2, 0 };
 
   // Ball Dimension
   constexpr double BALL_RADIUS = 0.04;
@@ -200,7 +199,7 @@ namespace constants {
   constexpr std::size_t DEADLOCK_SENTOUT_NUMBER = 2; // number of robots sent out when a deadlock happens
   constexpr std::size_t SENTOUT_DURATION_MS = 5 * 1000; // ms
   constexpr std::size_t FALL_TIME_MS = 3 * 1000; // ms
-  constexpr std::size_t DEADLOCK_DURATION_MS  = 20 * 1000; // ms
+  constexpr std::size_t DEADLOCK_DURATION_MS  = 1 * 1000; // ms
   constexpr double      DEADLOCK_THRESHOLD = 0.4; // m/s
   constexpr std::size_t KICKOFF_TIME_LIMIT_MS = 3 * 1000; // ms
   constexpr double      KICKOFF_BORDER = 0.5; // m
@@ -211,16 +210,39 @@ namespace constants {
   /****************************************************************************
    * ADDITONAL SETTINGS
    ****************************************************************************/
-  constexpr bool HALFTIME_CHANGE_SIDES = false;
+  constexpr bool PROCEED_TO_SECOND_HALF = false;
   constexpr bool INITIALIZE_RANDOM = true;
   constexpr bool DEADLOCK_RESET_RANDOM = true;
   constexpr bool BALLOUT_RESET_RANDOM = true;
   constexpr bool PENALTYAREA_CHECK = false;
-  constexpr std::array<std::array<bool, NUMBER_OF_ROBOTS>, 2> ACTIVENESS = {{
+  constexpr bool GK_PRACTICE = true;
+
+  constexpr std::array<std::array<bool, NUMBER_OF_ROBOTS>, 2> NORMAL_ACTIVENESS = {{
     // GK, D2, D1, F2, F1
     { true, true, true, true, true },
     { false, false, false, false, false },
   }};
+  constexpr std::array<std::array<bool, NUMBER_OF_ROBOTS>, 2> GK_ACTIVENESS = {{
+    { true, false, false, false, false },
+    { false, false, false, false, false },
+  }};
+  constexpr std::array<std::array<bool, NUMBER_OF_ROBOTS>, 2> ACTIVENESS = \
+    GK_PRACTICE ? GK_ACTIVENESS : NORMAL_ACTIVENESS;
+
+  constexpr double NORMAL_MAX_MIN_POSTURE_DIFF[3] = { FIELD_LENGTH, FIELD_WIDTH, 2 * PI };
+  constexpr double GK_MAX_MIN_POSTURE_DIFF[3] = { FIELD_LENGTH / 4, GOAL_AREA_WIDTH * 1.4, 2 * PI };
+  constexpr const double* MAX_MIN_POSTURE_DIFF = GK_PRACTICE ? GK_MAX_MIN_POSTURE_DIFF \
+                                                             : NORMAL_MAX_MIN_POSTURE_DIFF;
+
+  constexpr double NORMAL_MIN_POSTURE[3] = { -FIELD_LENGTH / 2, -FIELD_WIDTH / 2, 0 };
+  constexpr double GK_MIN_POSTURE[3] = { -FIELD_LENGTH / 2, -GOAL_AREA_WIDTH * 0.7, 0 };
+  constexpr const double* MIN_POSTURE = GK_PRACTICE ? GK_MIN_POSTURE : NORMAL_MIN_POSTURE;
+
+  constexpr double TARGET_MAX_MIN_Y_DIFF = GOAL_WIDTH * 0.9;
+  constexpr double TARGET_MIN_Y = GOAL_WIDTH * -0.45;
+
+  constexpr double FORCE_X_MAX_MIN_DIFF = 8;
+  constexpr double FORCE_X_MIN = 2;
   /****************************************************************************/
 
   constexpr std::size_t MSG_MAX_SIZE = 90000; // bytes

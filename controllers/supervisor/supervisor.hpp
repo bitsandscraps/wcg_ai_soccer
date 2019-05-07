@@ -10,6 +10,7 @@
 
 #include <webots/Camera.hpp>
 #include <webots/Receiver.hpp>
+#include <webots/Emitter.hpp>
 #include <webots/Supervisor.hpp>
 
 #include <algorithm>
@@ -20,6 +21,8 @@
 
 #include <cassert>
 #include <cmath>
+#include <cstring>
+#include <cstdio>
 
 namespace /* anonymous */ {
   std::string robot_name(bool is_red_team, std::size_t id)
@@ -41,6 +44,7 @@ public:
     : pn_cams_{getFromDef(constants::DEF_AUDVIEW), getFromDef(constants::DEF_CAMA), getFromDef(constants::DEF_CAMB)}
     , pc_cams_{getCamera(constants::NAME_CAMA), getCamera(constants::NAME_CAMB)}
     , pr_recv_{getReceiver(constants::NAME_RECV)}
+    , pr_emit_{getEmitter(constants::NAME_EMIT)}
   {
     constexpr auto is_null = [](const auto* p) { return !p; };
 
@@ -64,6 +68,18 @@ public:
   const unsigned char* get_image(bool is_red) const
   {
     return pc_cams_[is_red ? C_CAMA : C_CAMB]->getImage();
+  }
+
+  void set_force(double fx, double fz) {
+    fx_ = fx;
+    fz_ = fz;
+  }
+
+  void send_force_to_shooter() 
+  {
+    char buffer[15];
+    snprintf(buffer, 15, "%.2f %.2f", fx_, fz_);
+    pr_emit_->send(buffer, strlen(buffer) + 1);
   }
 
   // void reset_position(constants::robot_formation red_formation, constants::robot_formation blue_formation)
@@ -526,7 +542,9 @@ private: // private member variables
   std::array<webots::Node*, 3> pn_cams_;
   std::array<webots::Camera*, 2> pc_cams_;
   webots::Receiver* pr_recv_;
+  webots::Emitter* pr_emit_;
   bool half_passed_ = false;
+  double fx_, fz_;
 };
 
 #endif // H_SUPERVISOR_HPP

@@ -7,11 +7,15 @@
 #include "wamp_router.hpp"
 
 #include <chrono>
+#include <cstdlib>
+#include <ctime>
 #include <thread>
 
 int main()
 {
   using namespace constants;
+
+  std::srand(std::time(nullptr));
 
   wamp_router wr(REALM);
 
