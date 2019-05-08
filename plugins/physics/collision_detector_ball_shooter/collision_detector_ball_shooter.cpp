@@ -59,9 +59,11 @@ void webots_physics_step() {
   } else if (--force_step > 0) {
     dBodyAddForce(ball_body, force[0], 0, force[1]);
   }
+  pthread_mutex_lock(&mutex);
   for (int i = 0; i < 2; i++)
     for (int j = 0; j < ROBOT_COUNT; j++)
       robot_collision[i][j] = false;
+  pthread_mutex_unlock(&mutex);
 }
 
 int webots_physics_collide(dGeomID g1, dGeomID g2) {

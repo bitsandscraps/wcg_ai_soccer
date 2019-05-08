@@ -1,3 +1,6 @@
+if ! docker-compose run --rm devel; then
+    exit $?
+fi
 docker-compose build run
 xhost +
 docker run --runtime=nvidia --rm -it \

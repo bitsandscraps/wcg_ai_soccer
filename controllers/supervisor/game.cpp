@@ -1001,12 +1001,16 @@ void initialize_from_constants(const double* from, std::array<double, 3>* to, bo
   }
 }
 
-void set_init_posture(std::array<double, 2>* ball_posture,
-                      std::array<std::array<std::array<double, 3>, c::NUMBER_OF_ROBOTS>, 2>* robot_postures)
+void game::set_init_posture(
+    std::array<double, 2>* ball_posture, 
+    std::array<std::array<std::array<double, 3>, c::NUMBER_OF_ROBOTS>, 2>* robot_postures)
 {
   std::vector<std::array<double, 2>> preallocated_positions;
   for (std::size_t i = 0; i < 2; ++i) {
     (*ball_posture)[i] = random_posture(i, true);
+    if (c::GK_PRACTICE && i == 0) {
+      (*ball_posture)[0] *= max_force_; 
+    }
   }
   preallocated_positions.push_back(*ball_posture);
   for (std::size_t team_id : {0, 1}) {
@@ -1034,7 +1038,7 @@ void set_init_posture(std::array<double, 2>* ball_posture,
   }
 }
 
-void game::set_force(std::array<double, 2>* ball_posture) {
+void game::set_force(const std::array<double, 2>* ball_posture) {
   double target = c::TARGET_MAX_MIN_Y_DIFF * std::rand() / RAND_MAX;
   target += c::TARGET_MIN_Y;
   double fx = max_force_ * c::FORCE_X_MAX_MIN_DIFF * std::rand() / RAND_MAX;

@@ -199,7 +199,7 @@ namespace constants {
   constexpr std::size_t DEADLOCK_SENTOUT_NUMBER = 2; // number of robots sent out when a deadlock happens
   constexpr std::size_t SENTOUT_DURATION_MS = 5 * 1000; // ms
   constexpr std::size_t FALL_TIME_MS = 3 * 1000; // ms
-  constexpr std::size_t DEADLOCK_DURATION_MS  = 1 * 1000; // ms
+  constexpr std::size_t DEADLOCK_DURATION_MS  = 3 * 1000; // ms
   constexpr double      DEADLOCK_THRESHOLD = 0.4; // m/s
   constexpr std::size_t KICKOFF_TIME_LIMIT_MS = 3 * 1000; // ms
   constexpr double      KICKOFF_BORDER = 0.5; // m
@@ -245,7 +245,7 @@ namespace constants {
   constexpr double FORCE_X_MIN = 2;
 
   constexpr double INITIAL_MAX_FORCE = 0.1;
-  constexpr double FORCE_INCREMENT_PER_RESET = 0.0001;
+  constexpr double FORCE_INCREMENT_PER_RESET = 0.000001;
   /****************************************************************************/
 
   constexpr std::size_t MSG_MAX_SIZE = 90000; // bytes
