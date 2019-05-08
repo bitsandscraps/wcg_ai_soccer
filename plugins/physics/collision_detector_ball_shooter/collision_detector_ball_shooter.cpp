@@ -51,7 +51,7 @@ void webots_physics_init() {
 
 void webots_physics_step() {
   int dataSize;
-  const char* data = (const char*) dWebotsReceive(&dataSize);
+  const char* data = static_cast<const char*>(dWebotsReceive(&dataSize));
   if (dataSize > 0) {
     sscanf(data, "%lf %lf", &force[0], &force[1]);
     force_step = APPLY_FORCE_STEPS;

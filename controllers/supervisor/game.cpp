@@ -69,6 +69,7 @@ game::game(supervisor& sv, std::size_t rs_port, std::string uds_path)
   : sv_(sv)
   , rs_port_(rs_port)
   , uds_path_(uds_path)
+  , max_force_(constants::INITIAL_MAX_FORCE)
 {}
 
 void game::run()
@@ -1036,10 +1037,13 @@ void set_init_posture(std::array<double, 2>* ball_posture,
 void game::set_force(std::array<double, 2>* ball_posture) {
   double target = c::TARGET_MAX_MIN_Y_DIFF * std::rand() / RAND_MAX;
   target += c::TARGET_MIN_Y;
-  double fx = c::FORCE_X_MAX_MIN_DIFF * std::rand() / RAND_MAX;
+  double fx = max_force_ * c::FORCE_X_MAX_MIN_DIFF * std::rand() / RAND_MAX;
   fx += c::FORCE_X_MIN;
   double fy = fx * ((*ball_posture)[1] - target) / ((*ball_posture)[0] + 0.5 * c::FIELD_LENGTH);
   sv_.set_force(fx * -1, fy);
+  if (max_force_ < 1.0) {
+    max_force_ += c::FORCE_INCREMENT_PER_RESET;
+  }
 }
 
 void game::reset_to_random_posture()

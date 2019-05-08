@@ -1,3 +1,7 @@
 cd /root/controllers/supervisor
-bear make -e WEBOTS_HOME=/usr/local/webots -e VERBOSE=1 all
-chown -R $HOST_PERMS /root/controllers
+if bash /root/make-controllers.sh && bash /root/make-plugins.sh; then
+    rc=0
+else
+    rc=$?
+fi
+exit $rc

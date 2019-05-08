@@ -238,11 +238,14 @@ namespace constants {
   constexpr double GK_MIN_POSTURE[3] = { -FIELD_LENGTH / 2, -GOAL_AREA_WIDTH * 0.7, 0 };
   constexpr const double* MIN_POSTURE = GK_PRACTICE ? GK_MIN_POSTURE : NORMAL_MIN_POSTURE;
 
-  constexpr double TARGET_MAX_MIN_Y_DIFF = GOAL_WIDTH * 0.9;
-  constexpr double TARGET_MIN_Y = GOAL_WIDTH * -0.45;
+  constexpr double TARGET_MAX_MIN_Y_DIFF = GOAL_WIDTH * 0.8;
+  constexpr double TARGET_MIN_Y = GOAL_WIDTH * -0.4;
 
   constexpr double FORCE_X_MAX_MIN_DIFF = 8;
   constexpr double FORCE_X_MIN = 2;
+
+  constexpr double INITIAL_MAX_FORCE = 0.1;
+  constexpr double FORCE_INCREMENT_PER_RESET = 0.0001;
   /****************************************************************************/
 
   constexpr std::size_t MSG_MAX_SIZE = 90000; // bytes

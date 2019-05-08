@@ -39,10 +39,4 @@ services:
         volumes:
             - /mnt/wisrl/Documents/wcg/wcg_ai_soccer/controllers:/root/controllers
             - /mnt/wisrl/Documents/wcg/wcg_ai_soccer/extlibs:/root/extlibs
-    plugins:
-        image: wcg-devel
-        command: bash /root/make-plugins.sh
-        environment:
-            - HOST_PERMS=1000:1000
-        volumes:
             - /mnt/wisrl/Documents/wcg/wcg_ai_soccer/plugins:/root/plugins

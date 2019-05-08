@@ -194,6 +194,8 @@ private:
 
   std::promise<void> bootup_promise_;
   std::promise<void> ready_promise_;
+
+  double max_force_;
 };
 
 #endif // H_GAME_HPP

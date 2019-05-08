@@ -22,4 +22,5 @@ RUN mkdir -p /root/extlibs
 RUN mkdir -p /root/plugins
 
 COPY ./make.sh ./
+COPY ./make-controllers.sh ./
 COPY ./make-plugins.sh ./
