@@ -6,7 +6,8 @@
   "team_a": {
     "name": "teamA",
     "executable1": "examples/player_rulebased-A_py/player_rulebased-A.py",
-    "executable": "examples/disc/player_DISC.py",
+    "executable2": "examples/disc/player_DISC.py",
+    "executable": "examples/disc-sparse/player_DISC.py",
     "datapath": "examples/team_a_data"
   },
   "team_b": {
