@@ -26,30 +26,6 @@ Please refer to the [Wiki pages](https://github.com/wcgaimasters/WCG-AI-MASTERS-
 
 - supervisor: A referee program that manages AI Soccer game as whole (Participant programs communicate with this program to control the robots)
 
-**examples**: Contains sample programs participants can refer to **(Participants may implement AI programs referring to the sample programs provided in this directory)**
-
-- common: Contains a basic interface for information handling and communication with the simulation program
-
-- extlibs: Contains external libraries used in sample programs
-
-- team_a_data and team_b_data: Directories where participants' program may write some files into if needed
-
-- Remaining directories contain samples participants can refer to.
-
-- general_check-varaibles: A program that prints game information variables sent from the simulation program to participants program
-
-- general_frame-skip: A program that implements framing skipping. Frame skipping is advised when your program takes more than 50 ms in each game frame in generating the output control signal
-
-- general_image-fetch: A program that shows the game image frames using OpenCV
-
-- player_deep-learning-play and player_deep-learning-train: Programs that implement a base skeleton for deep learning using Deep-Q-Network (DQN)
-
-- player_random-walk: A program that simply sets robot wheel speeds to random value in each game frame
-
-- player_rulebased-A, player_rulebased-B: Programs that implement a rule-based control of a team )'rulebased-B' is a simplified version of 'rulebased-A')
-
-- player_skeleton: A base skeleton for the participant program
-
 **extlibs**: Contains external libraries used in WCG AI Masters simulation
 
 **plugins**: Contains a physics plugin used for ball-robot collision detection
