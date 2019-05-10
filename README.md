@@ -8,9 +8,7 @@ The [WCG AI Masters](https://www.wcg.com/new-horizons/view/AI-Masters) simulatio
 
 **How to download the simulation program**
 
-Method 1. Go to [releases](https://github.com/wcgaimasters/wcg_ai_soccer/releases) and download the latest version.
-
-Method 2. Use following git command
+Use following git command
 
       git clone https://github.com/bitsandscraps/wcg_ai_soccer.git --recurse-submodules
 
